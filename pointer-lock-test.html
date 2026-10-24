@@ -1,0 +1,181 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pointer Lock Test</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      background: #15151f;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 28px;
+      background: #222232;
+      border: 1px solid #393950;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 26px;
+    }
+
+    p {
+      color: #bdbdd0;
+      line-height: 1.5;
+    }
+
+    button {
+      padding: 13px 24px;
+      margin: 12px 5px;
+      border: none;
+      border-radius: 8px;
+      background: #7655ff;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #927aff;
+    }
+
+    #status {
+      margin-top: 18px;
+      padding: 14px;
+      background: #171722;
+      border: 1px solid #393950;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    #testArea {
+      margin-top: 20px;
+      padding: 28px 12px;
+      background: #292943;
+      border: 2px dashed #7655ff;
+      border-radius: 10px;
+      cursor: crosshair;
+    }
+
+    .hint {
+      font-size: 13px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Pointer Lock Test</h1>
+
+    <p>
+      This page checks whether your browser allows JavaScript
+      to lock the mouse pointer.
+    </p>
+
+    <button id="lockButton" type="button">
+      Test Mouse Lock
+    </button>
+
+    <button id="unlockButton" type="button">
+      Unlock Mouse
+    </button>
+
+    <div id="status" role="status" aria-live="polite">
+      Ready to test.
+    </div>
+
+    <div id="testArea" tabindex="0">
+      <strong>Mouse Test Area</strong>
+      <p>Click "Test Mouse Lock", then move your mouse.</p>
+    </div>
+
+    <p class="hint">
+      Press ESC to release the mouse pointer.
+    </p>
+  </main>
+
+  <script>
+    const lockButton = document.getElementById("lockButton");
+    const unlockButton = document.getElementById("unlockButton");
+    const status = document.getElementById("status");
+    const testArea = document.getElementById("testArea");
+
+    function updateStatus(message) {
+      status.textContent = message;
+    }
+
+    async function requestLock() {
+      try {
+        if (!document.pointerLockElement) {
+          await testArea.requestPointerLock();
+        }
+      } catch (error) {
+        updateStatus(
+          "Pointer lock failed: " + error.message
+        );
+      }
+    }
+
+    lockButton.addEventListener("click", requestLock);
+
+    testArea.addEventListener("click", requestLock);
+
+    unlockButton.addEventListener("click", () => {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      } else {
+        updateStatus("Mouse is not currently locked.");
+      }
+    });
+
+    document.addEventListener("pointerlockchange", () => {
+      if (document.pointerLockElement === testArea) {
+        updateStatus(
+          "SUCCESS: Mouse locked! Move freely. Press ESC to unlock."
+        );
+      } else {
+        updateStatus("Mouse unlocked.");
+      }
+    });
+
+    document.addEventListener("pointerlockerror", () => {
+      updateStatus(
+        "Pointer lock was denied. Check iframe sandbox permissions."
+      );
+    });
+
+    document.addEventListener("mousemove", (event) => {
+      if (document.pointerLockElement === testArea) {
+        updateStatus(
+          "Mouse locked! Movement: X " +
+          event.movementX +
+          ", Y " +
+          event.movementY
+        );
+      }
+    });
+  </script>
+</body>
+</html>
+```
